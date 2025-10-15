@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Client Demo - VTO Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .results {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .results pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
+            color: #1565c0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .protocol-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #4caf50;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .protocol-indicator::before {
+            content: "●";
+            font-size: 16px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .example-queries {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .example-query {
+            background: #f0f0f0;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .example-query:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 MCP Client Demo</h1>
+            <p class="subtitle">VTO Agent - Volunteer Time Off Management System</p>
+            <span class="badge">Model Context Protocol</span>
+            <span class="badge">Heroku Deployed</span>
+        </div>
+
+        <div class="demo-section">
+            <div class="protocol-indicator">MCP Protocol Active</div>
+            
+            <div class="info-box">
+                <p><strong>What is this?</strong> This page demonstrates a web-based MCP (Model Context Protocol) client calling an MCP server. Instead of REST API, this uses the official MCP protocol to communicate!</p>
+            </div>
+
+            <h2>🔍 Search Volunteer Opportunities (via MCP)</h2>
+
+            <div class="example-queries">
+                <div class="example-query" onclick="setExample('tutoring', '', 5)">📚 Tutoring</div>
+                <div class="example-query" onclick="setExample('food bank', '', 5)">🍲 Food Bank</div>
+                <div class="example-query" onclick="setExample('environment', '', 5)">🌱 Environment</div>
+                <div class="example-query" onclick="setExample('animal care', '', 5)">🐾 Animal Care</div>
+                <div class="example-query" onclick="setExample('', '', 10)">✨ Surprise Me</div>
+            </div>
+
+            <div class="input-group">
+                <label for="keywords">🔎 Keywords</label>
+                <input type="text" id="keywords" placeholder="e.g., tutoring, food bank, environment">
+            </div>
+
+            <div class="input-group">
+                <label for="location">📍 Location (Optional)</label>
+                <input type="text" id="location" placeholder="e.g., Toronto, Vancouver, Canada">
+            </div>
+
+            <div class="input-group">
+                <label for="maxResults">📊 Max Results</label>
+                <input type="number" id="maxResults" value="5" min="1" max="20">
+            </div>
+
+            <div class="button-group">
+                <button onclick="searchMCP()" id="searchBtn">
+                    🚀 Search via MCP Protocol
+                </button>
+                <button onclick="listTools()" class="secondary-button" id="toolsBtn">
+                    🛠️ List MCP Tools
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Calling MCP server...</p>
+            </div>
+
+            <div class="results" id="results">
+                <h3>📋 Results will appear here</h3>
+                <p style="color: #666; font-size: 14px;">Use the search form above or click example queries to test the MCP protocol!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setExample(keywords, location, maxResults) {
+            document.getElementById('keywords').value = keywords;
+            document.getElementById('location').value = location;
+            document.getElementById('maxResults').value = maxResults;
+        }
+
+        async function searchMCP() {
+            const keywords = document.getElementById('keywords').value;
+            const location = document.getElementById('location').value;
+            const maxResults = parseInt(document.getElementById('maxResults').value);
+
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const searchBtn = document.getElementById('searchBtn');
+
+            loading.classList.add('active');
+            searchBtn.disabled = true;
+            results.innerHTML = '<h3>📡 Sending MCP protocol message...</h3>';
+
+            try {
+                // Build MCP protocol message
+                const mcpMessage = {
+                    jsonrpc: '2.0',
+                    id: Date.now(),
+                    method: 'tools/call',
+                    params: {
+                        name: 'search_volunteer_opportunities',
+                        arguments: {
+                            keywords: keywords,
+                            location: location,
+                            max_results: maxResults
+                        }
+                    }
+                };
+
+                console.log('Sending MCP message:', mcpMessage);
+
+                const response = await fetch('/mcp/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(mcpMessage)
+                });
+
+                const data = await response.json();
+                console.log('MCP response:', data);
+
+                // Extract result
+                if (data.result && data.result.content && data.result.content.length > 0) {
+                    const text = data.result.content[0].text;
+                    
+                    results.innerHTML = `
+                        <h3>✅ MCP Response Received</h3>
+                        <p style="color: #666; font-size: 13px; margin-bottom: 10px;">
+                            Protocol: <strong>MCP (Model Context Protocol)</strong> | 
+                            Transport: <strong>HTTP/SSE</strong> | 
+                            Message ID: <strong>${data.id}</strong>
+                        </p>
+                        <pre>${text}</pre>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <h3>📋 Raw MCP Response</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p style="color: #d32f2f;">Failed to communicate with MCP server</p>
+                    <pre>${error.message}</pre>
+                `;
+                console.error('Error:', error);
+            } finally {
+                loading.classList.remove('active');
+                searchBtn.disabled = false;
+            }
+        }
+
+        async function listTools() {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const toolsBtn = document.getElementById('toolsBtn');
+
+            loading.classList.add('active');
+            toolsBtn.disabled = true;
+            results.innerHTML = '<h3>🔍 Discovering MCP tools...</h3>';
+
+            try {
+                const mcpMessage = {
+                    jsonrpc: '2.0',
+                    id: Date.now(),
+                    method: 'tools/list',
+                    params: {}
+                };
+
+                console.log('Listing MCP tools:', mcpMessage);
+
+                const response = await fetch('/mcp/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(mcpMessage)
+                });
+
+                const data = await response.json();
+                console.log('MCP tools:', data);
+
+                results.innerHTML = `
+                    <h3>🛠️ Available MCP Tools</h3>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 10px;">
+                        The MCP server exposes these tools via the Model Context Protocol:
+                    </p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p style="color: #d32f2f;">Failed to list MCP tools</p>
+                    <pre>${error.message}</pre>
+                `;
+                console.error('Error:', error);
+            } finally {
+                loading.classList.remove('active');
+                toolsBtn.disabled = false;
+            }
+        }
+
+        // Allow Enter key to search
+        document.getElementById('keywords').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchMCP();
+        });
+    </script>
+</body>
+</html>
+
