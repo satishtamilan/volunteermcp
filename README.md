@@ -7,12 +7,35 @@ A **Model Context Protocol (MCP)** server, client demo, and REST API for searchi
 
 ---
 
+## 🏆 What Makes This Special?
+
+**Most MCP implementations are either servers OR clients. This project has BOTH:**
+
+1. ✅ **MCP Server** (Node.js) - Serves MCP protocol
+2. ✅ **MCP Client** (Apex) - **Custom Salesforce MCP client**
+3. ✅ **MCP Client** (JavaScript) - Browser-based demo
+4. ✅ **REST API** - Traditional HTTP endpoints
+5. ✅ **Hybrid Architecture** - All in one deployment
+
+### 💡 Why the Apex MCP Client Matters:
+
+**Salesforce doesn't natively support MCP protocol.** This project implements a **full JSON-RPC 2.0 MCP client from scratch in Apex**, making Salesforce Agentforce a first-class citizen in the MCP ecosystem.
+
+**This demonstrates:**
+- Deep understanding of protocol specifications
+- Ability to implement AI protocols in enterprise platforms
+- Bridge between traditional enterprise (Salesforce) and cutting-edge AI (MCP)
+
+---
+
 ## 🎯 Features
 
-- **🔌 MCP Server** - True Model Context Protocol implementation for AI assistants (Claude Desktop)
+- **🔌 MCP Server** - True Model Context Protocol implementation (JSON-RPC 2.0)
+- **📱 Multiple MCP Clients** - Apex (Salesforce), JavaScript (Browser), Claude Desktop
 - **💻 MCP Client Demo** - Interactive web-based client for testing MCP over SSE
-- **🌐 REST API** - HTTP endpoints for web/mobile/Salesforce integration
+- **🌐 REST API** - HTTP endpoints for traditional integration
 - **🔄 Hybrid Mode** - Single server supporting both REST and MCP protocols
+- **⚡ Salesforce Agentforce** - Custom Apex MCP client for Agentforce integration
 - **💰 FREE** - Uses VolunteerConnector API (no authentication required)
 - **🚀 Heroku Ready** - Deploy to Heroku in 5 minutes
 - **🧪 Tested** - Includes test scripts and live demos
@@ -48,8 +71,20 @@ A **Model Context Protocol (MCP)** server, client demo, and REST API for searchi
 ### **4. Hybrid Server** (`server-with-mcp-sse.js`)
 - Supports BOTH REST API and MCP over SSE
 - Single deployment for multiple protocols
+- MCP endpoint: `POST /mcp/message` (JSON-RPC 2.0)
 - Serves MCP client demo at `/`
 - Perfect for production deployments
+
+### **5. Salesforce Apex MCP Client** (`VTOApexMCPClient.cls`)
+- **Custom MCP client written in Apex**
+- Implements JSON-RPC 2.0 protocol from scratch
+- Calls MCP server via HTTP POST
+- Usable in Salesforce Agentforce Agent Builder
+- Methods:
+  - `searchViaMCPProtocol` - Search using MCP protocol
+  - `listMCPTools` - Discover available MCP tools
+- **Full protocol compliance** - validates JSON-RPC responses
+- **Production-ready** enterprise MCP client
 
 ---
 
@@ -113,6 +148,76 @@ Then add to Claude Desktop config (`~/Library/Application Support/Claude/claude_
   }
 }
 ```
+
+---
+
+## ⚡ Salesforce Agentforce Integration
+
+This project includes a **custom Apex MCP client** that allows Salesforce Agentforce to use the Model Context Protocol!
+
+### **How It Works:**
+
+```
+Salesforce Agentforce
+    ↓
+VTOApexMCPClient.cls (Apex MCP Client)
+    ↓ JSON-RPC 2.0 Message
+POST /mcp/message
+    ↓
+Hybrid Server (MCP Protocol Handler)
+    ↓
+VolunteerConnector API
+```
+
+### **MCP Message Example:**
+
+**Request (from Apex):**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 42345,
+  "method": "tools/call",
+  "params": {
+    "name": "search_volunteer_opportunities",
+    "arguments": {
+      "keywords": "tutoring",
+      "location": "Toronto",
+      "max_results": 5
+    }
+  }
+}
+```
+
+**Response (from server):**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 42345,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "🌐 Found 5 volunteer opportunities...\n\n1. ..."
+      }
+    ]
+  }
+}
+```
+
+### **Key Features:**
+
+- ✅ **Full JSON-RPC 2.0 compliance**
+- ✅ **Protocol validation** (checks jsonrpc version, message IDs)
+- ✅ **Tool discovery** (`tools/list` method)
+- ✅ **Tool execution** (`tools/call` method)
+- ✅ **Enterprise logging** (debug logs for troubleshooting)
+- ✅ **Error handling** (proper JSON-RPC error responses)
+
+### **Why This Matters:**
+
+**Most Salesforce integrations use REST.** This project demonstrates that Salesforce can implement **cutting-edge AI protocols** like MCP through custom Apex clients.
+
+**This makes Salesforce a first-class citizen in the MCP ecosystem!** 🚀
 
 ---
 
@@ -390,27 +495,47 @@ Display in web UI
 
 ### **Hybrid Architecture:**
 ```
-┌─────────────────────────────────────────┐
-│  Hybrid Server (server-with-mcp-sse.js) │
-├─────────────────────────────────────────┤
-│                                         │
-│  ┌─────────────┐     ┌──────────────┐  │
-│  │  REST API   │     │  MCP Server  │  │
-│  │  Endpoints  │     │  (SSE)       │  │
-│  └──────┬──────┘     └──────┬───────┘  │
-│         │                   │           │
-│         └───────┬───────────┘           │
-│                 │                       │
-│         ┌───────▼──────────┐            │
-│         │ VolunteerConnect │            │
-│         │       API        │            │
-│         └──────────────────┘            │
-└─────────────────────────────────────────┘
-         │                   │
-         ▼                   ▼
-   Salesforce          Web Browser
-   (REST)              (MCP Client)
+┌───────────────────────────────────────────────────┐
+│     Hybrid Server (server-with-mcp-sse.js)        │
+├───────────────────────────────────────────────────┤
+│                                                   │
+│  ┌────────────────┐       ┌──────────────────┐   │
+│  │   REST API     │       │   MCP Protocol   │   │
+│  │   Endpoints    │       │   (JSON-RPC 2.0) │   │
+│  │                │       │                  │   │
+│  │ /api/search    │       │ /mcp/message     │   │
+│  │ /api/opp/:id   │       │                  │   │
+│  └────────┬───────┘       └─────────┬────────┘   │
+│           │                         │            │
+│           └──────────┬──────────────┘            │
+│                      │                           │
+│            ┌─────────▼──────────┐                │
+│            │ VolunteerConnector │                │
+│            │        API         │                │
+│            └────────────────────┘                │
+└───────────────────────────────────────────────────┘
+            │                    │
+            ▼                    ▼
+    ┌──────────────┐     ┌─────────────────────┐
+    │  Salesforce  │     │    MCP Clients:     │
+    │  (REST API)  │     │  • Apex Client      │
+    └──────────────┘     │  • Browser Client   │
+                         │  • Claude Desktop   │
+                         └─────────────────────┘
+
+🔑 Key Difference:
+   REST: Traditional HTTP API calls
+   MCP:  JSON-RPC 2.0 protocol messages
 ```
+
+### **Multiple Integration Patterns:**
+
+| Client Type | Protocol | Endpoint | Use Case |
+|-------------|----------|----------|----------|
+| **Salesforce (REST)** | HTTP REST | `/api/search` | Standard integration |
+| **Salesforce (MCP)** | JSON-RPC 2.0 | `/mcp/message` | Protocol-compliant AI |
+| **Web Browser** | JSON-RPC 2.0 | `/mcp/message` | Interactive demo |
+| **Claude Desktop** | MCP (stdio) | N/A (stdio) | Native AI assistant |
 
 ---
 
@@ -432,6 +557,10 @@ volunteer-search-mcp/
 ├── README.md                      # This file
 ├── LICENSE                        # MIT License
 └── .gitignore                     # Git ignore rules
+
+Salesforce Apex MCP Client (separate repo):
+└── VTOApexMCPClient.cls           # Apex MCP client (JSON-RPC 2.0)
+    └── VTOApexMCPClient.cls-meta.xml
 ```
 
 ---
@@ -466,15 +595,24 @@ npx @modelcontextprotocol/inspector node volunteer-search-server.js
 
 ## 🌟 Use Cases
 
+### **For Enterprises:**
+- **Salesforce Agentforce** - Add volunteer search to AI agents (REST or MCP)
+- **Corporate VTO Programs** - Help employees find volunteer work
 - **Volunteer Management Platforms** - Integrate external volunteer opportunities
-- **Salesforce Agentforce** - Add volunteer search to AI agents
-- **Claude Desktop** - Search volunteers via MCP protocol
-- **AI Assistants** - Add volunteer search capability to any MCP-compatible AI
-- **Interactive Demos** - Use web client for presentations and testing
 - **Mobile Apps** - Find local volunteer opportunities
 - **Nonprofit Websites** - Display volunteer opportunities
-- **Corporate VTO Programs** - Help employees find volunteer work
-- **Hackathons & Presentations** - Showcase MCP integration with live demo
+
+### **For AI/ML Developers:**
+- **Claude Desktop** - Native MCP integration via stdio
+- **Custom AI Assistants** - Add volunteer search to any MCP-compatible AI
+- **Protocol Research** - Study MCP client/server implementation
+- **Multi-protocol Architecture** - Learn REST + MCP hybrid patterns
+
+### **For Learning & Demos:**
+- **Interactive Demos** - Use web client for presentations and testing
+- **Hackathons** - Showcase MCP integration with live demo
+- **Protocol Education** - Learn JSON-RPC 2.0 and MCP specification
+- **Salesforce Extensions** - Example of custom Apex MCP client
 
 ---
 
