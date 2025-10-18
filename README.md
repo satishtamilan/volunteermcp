@@ -1,6 +1,6 @@
-# 🌐 Volunteer Search MCP Server & REST API
+# 🌐 Volunteer Search MCP Server, Client & REST API
 
-A **Model Context Protocol (MCP)** server and REST API for searching volunteer opportunities from the free [VolunteerConnector API](https://www.volunteerconnector.org/api).
+A **Model Context Protocol (MCP)** server, client demo, and REST API for searching volunteer opportunities from the free [VolunteerConnector API](https://www.volunteerconnector.org/api).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -9,11 +9,13 @@ A **Model Context Protocol (MCP)** server and REST API for searching volunteer o
 
 ## 🎯 Features
 
-- **🔌 MCP Server** - True Model Context Protocol implementation for AI assistants
+- **🔌 MCP Server** - True Model Context Protocol implementation for AI assistants (Claude Desktop)
+- **💻 MCP Client Demo** - Interactive web-based client for testing MCP over SSE
 - **🌐 REST API** - HTTP endpoints for web/mobile/Salesforce integration
+- **🔄 Hybrid Mode** - Single server supporting both REST and MCP protocols
 - **💰 FREE** - Uses VolunteerConnector API (no authentication required)
 - **🚀 Heroku Ready** - Deploy to Heroku in 5 minutes
-- **🧪 Tested** - Includes test scripts and examples
+- **🧪 Tested** - Includes test scripts and live demos
 - **📚 Well Documented** - Complete guides and examples
 
 ---
@@ -21,13 +23,20 @@ A **Model Context Protocol (MCP)** server and REST API for searching volunteer o
 ## 📦 What's Included
 
 ### **1. MCP Server** (`volunteer-search-server.js`)
-- Implements Model Context Protocol
+- Implements Model Context Protocol (stdio)
 - Works with Claude Desktop and other MCP clients
 - Exposes 2 tools:
   - `search_volunteer_opportunities` - Search with filters
   - `get_opportunity_details` - Get full details by ID
 
-### **2. REST API** (`server.js`)
+### **2. MCP Client Demo** (`public/index.html`)
+- Interactive web-based MCP client
+- Connects to MCP server via SSE (Server-Sent Events)
+- Real-time testing interface
+- Beautiful, modern UI
+- No backend required (pure frontend)
+
+### **3. REST API** (`server.js`)
 - Express.js REST API
 - Deployable to Heroku/Render/Railway
 - Endpoints:
@@ -36,11 +45,38 @@ A **Model Context Protocol (MCP)** server and REST API for searching volunteer o
   - `POST /api/search` - Search opportunities
   - `GET /api/opportunity/:id` - Get details
 
+### **4. Hybrid Server** (`server-with-mcp-sse.js`)
+- Supports BOTH REST API and MCP over SSE
+- Single deployment for multiple protocols
+- Serves MCP client demo at `/`
+- Perfect for production deployments
+
 ---
 
 ## 🚀 Quick Start
 
-### **Option 1: REST API (for Heroku/Salesforce)**
+### **Option 1: MCP Client Demo (Interactive Web UI)**
+
+```bash
+# Install dependencies
+npm install
+
+# Start the hybrid server (REST + MCP)
+node server-with-mcp-sse.js
+
+# Open in browser
+open http://localhost:3000
+```
+
+**What you get:**
+- Interactive MCP client in your browser
+- Test volunteer searches in real-time
+- See MCP protocol messages
+- Beautiful UI for demos
+
+---
+
+### **Option 2: REST API (for Heroku/Salesforce)**
 
 ```bash
 # Install dependencies
@@ -53,7 +89,9 @@ npm start
 curl http://localhost:3000/health
 ```
 
-### **Option 2: MCP Server (for Claude Desktop)**
+---
+
+### **Option 3: MCP Server (for Claude Desktop)**
 
 ```bash
 # Install dependencies
@@ -326,7 +364,7 @@ VolunteerConnector API
 Return formatted results
 ```
 
-### **MCP Flow:**
+### **MCP Server Flow (stdio):**
 ```
 AI Assistant (Claude Desktop)
     ↓ MCP Protocol (stdio)
@@ -337,21 +375,63 @@ VolunteerConnector API
 Return formatted results
 ```
 
+### **MCP Client Flow (SSE):**
+```
+Web Browser (MCP Client Demo)
+    ↓ MCP over SSE
+Hybrid Server (server-with-mcp-sse.js)
+    ↓ HTTP GET
+VolunteerConnector API
+    ↓
+Return formatted results
+    ↓ SSE Stream
+Display in web UI
+```
+
+### **Hybrid Architecture:**
+```
+┌─────────────────────────────────────────┐
+│  Hybrid Server (server-with-mcp-sse.js) │
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌─────────────┐     ┌──────────────┐  │
+│  │  REST API   │     │  MCP Server  │  │
+│  │  Endpoints  │     │  (SSE)       │  │
+│  └──────┬──────┘     └──────┬───────┘  │
+│         │                   │           │
+│         └───────┬───────────┘           │
+│                 │                       │
+│         ┌───────▼──────────┐            │
+│         │ VolunteerConnect │            │
+│         │       API        │            │
+│         └──────────────────┘            │
+└─────────────────────────────────────────┘
+         │                   │
+         ▼                   ▼
+   Salesforce          Web Browser
+   (REST)              (MCP Client)
+```
+
 ---
 
 ## 📁 Project Structure
 
 ```
 volunteer-search-mcp/
-├── server.js                    # REST API server (Express.js)
-├── volunteer-search-server.js   # MCP server
-├── package.json                 # Dependencies
-├── Procfile                     # Heroku configuration
-├── test-api.sh                  # Test script
-├── HEROKU_DEPLOYMENT.md         # Deployment guide
-├── README.md                    # This file
-├── LICENSE                      # MIT License
-└── .gitignore                   # Git ignore rules
+├── server.js                      # REST API server (Express.js)
+├── server-with-mcp-sse.js         # Hybrid server (REST + MCP over SSE)
+├── volunteer-search-server.js     # MCP server (stdio for Claude Desktop)
+├── public/
+│   └── index.html                 # MCP Client Demo (interactive web UI)
+├── package.json                   # Dependencies
+├── Procfile                       # Heroku configuration
+├── test-api.sh                    # Test script
+├── GETTING_STARTED.md             # Quick start guide
+├── CLAUDE_DESKTOP_DEMO.md         # Claude Desktop setup guide
+├── HEROKU_DEPLOYMENT.md           # Deployment guide
+├── README.md                      # This file
+├── LICENSE                        # MIT License
+└── .gitignore                     # Git ignore rules
 ```
 
 ---
@@ -388,10 +468,13 @@ npx @modelcontextprotocol/inspector node volunteer-search-server.js
 
 - **Volunteer Management Platforms** - Integrate external volunteer opportunities
 - **Salesforce Agentforce** - Add volunteer search to AI agents
-- **Claude Desktop** - Search volunteers via MCP
+- **Claude Desktop** - Search volunteers via MCP protocol
+- **AI Assistants** - Add volunteer search capability to any MCP-compatible AI
+- **Interactive Demos** - Use web client for presentations and testing
 - **Mobile Apps** - Find local volunteer opportunities
 - **Nonprofit Websites** - Display volunteer opportunities
 - **Corporate VTO Programs** - Help employees find volunteer work
+- **Hackathons & Presentations** - Showcase MCP integration with live demo
 
 ---
 
@@ -438,6 +521,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🎉 Quick Links
 
+- 🚀 [Getting Started Guide](GETTING_STARTED.md)
+- 💻 [MCP Client Demo](http://localhost:3000) - Start hybrid server first
+- 🤖 [Claude Desktop Setup](CLAUDE_DESKTOP_DEMO.md)
 - 📖 [Heroku Deployment Guide](HEROKU_DEPLOYMENT.md)
 - 🧪 [Test the API](./test-api.sh)
 - 🔌 [MCP Documentation](https://modelcontextprotocol.io/)
